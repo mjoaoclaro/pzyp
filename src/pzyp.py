@@ -53,23 +53,44 @@ class Window:
             print(c)
 
 
-def encode(in_):
-    buffer = Window(20) # falta definir como ele explicou na aula (ter o tamanho em bytes)
+def search_more(found, buffer):
+    i = 0
+    offset = 0 # nº de elementos encontrados na lista found que têm correspondencia no buffer
+
+    for c in buffer: 
+        if len(found) <= offset:
+            return i - len(found)
+
+        if found[offset] == c:
+            offset += 1
+        else:
+            offset = 0
+
+        i += 1
+    return 0
+
+
+
+def encode(in_): # talvez valha a pena fazer como ele disse de criar classes para o encode e o decode
+    buffer = Window(20) # falta definir como ele explicou na aula (para ter o tamanho em bytes)
     found = [] # lista para colocar os caracteres que foram encontrados e depois comparar sequencias no buffer
     index_at = 0 # indice de onde se encontra o caracter para depois colocar no "<index_at,pos_>"
     pos_ = 0 # para colocar na posição do comentário em cima; quantos caracteres do found sao iguais em sequencia no buffer
 
     with open(in_, 'r+') as file_in:
-        for c in file_in.read():
-            buffer.extend(c)
-            try:
-                if buffer.search(c):
-                    index_at = buffer._deque.index(c)
-                    found.append(c)
-                    print('Depois do search ', c)
+        while True:
+            for c in file_in.read():
+                buffer.extend(c)
+                try:
+                    if buffer.search(c):
+                        index_at = buffer._deque.index(c)
+                        found.append(c)
+                        
 
-            except PyzypError:
-                print('erro')
+                except PyzypError:
+                    print('erro')
+    
+    found = [] #faz reset da lista
 
 
 
@@ -77,6 +98,9 @@ def encode(in_):
 def decode():
     pass
 
+def build_token(index_, pos):
+    build_ = f'<{index_},{pos}>'
+    return build_
 
 if __name__ == '__main__':
 
