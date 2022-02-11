@@ -105,7 +105,7 @@ def build_token(index_, pos):
 if __name__ == '__main__':
 
 #   args = docopt('__doc__') / para usar nas fases a seguir
-
+# o ficheiro teste.txt esta na pasta tests
     
     if len(sys.argv) == 2:
         encode(sys.argv[1])
