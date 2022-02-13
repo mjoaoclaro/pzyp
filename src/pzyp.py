@@ -1,36 +1,37 @@
-#import docopt
-from hashlib import new
-from re import search
+
 import sys
 from collections import deque
 
 
-FILE_EXTENSION = 'lzs' 
+
+FILE_EXTENTION = 'lzs' 
 
 """
 Implementing a compressor/decompressor using the LZSS method
 
-usage:
-    pzyp.py [-c [-l (<LEVEL>)] | -d | -s | -h] [-p (<PASSWORD>)] (<FILE>)
+    Usage:
+        pzyp.py [-c [-l (<LEVEL>)] | -d | -s | -h] [-p (<PASSWORD>)] (<FILE>)
 
-options:
-    -h, --help      show this text
-    -c              compress FILE
-    -d              decompress FILE
-    -l              compressing LEVEL [default: 2]
-    -s, --sumary    meta-info of compressed FILE
-    -p, --password  establishes a PASSWORD for FILE encription
+    Options:
+        -h, --help         show this text
+        -c, --compress     compress FILE
+        -d, --decompress   decompress FILE
+        -l                 compressing LEVEL [default: 2]
+        -s, --sumary       meta-info of compressed FILE
+        -p, --password     establishes a PASSWORD for FILE encription
 
-LEVEL: is an int that ranges between 1 and 4; the
-compression LEVEL affects the window dimension(size of buffer)
-and the maximum size sequence.
-Level 1: W =  1 KB ⇒10 bits    M = 15 + 2 ⇒4 bits
-Level 2: W =  4 KB⇒12 bits    M = 15 + 3⇒4 bits
-Level 3: W = 16 KB ⇒ 14 bits   M = 32 + 3 ⇒ 5 bits
-Level 4: W = 32 KB ⇒ 15 bits   M = 32 + 3 ⇒ 5 bits
+    LEVEL: is an int that ranges between 1 and 4; the
+    compression LEVEL affects the window dimension(size of buffer)
+    and the maximum size sequence.
 
-The output file will have the same name as the FILE with the extension .LZS
+    Level 1: W =  1 KB ⇒10 bits    M = 15 + 2 ⇒4 bits
+    Level 2: W =  4 KB⇒12 bits    M = 15 + 3⇒4 bits
+    Level 3: W = 16 KB ⇒ 14 bits   M = 32 + 3 ⇒ 5 bits
+    Level 4: W = 32 KB ⇒ 15 bits   M = 32 + 3 ⇒ 5 bits
+
+    The output file will have the same name as the FILE with the extension .LZS
 """
+
 
 class PyzypError(Exception):
     pass
@@ -41,8 +42,8 @@ def importFile(location):
     file.close()
     return content
 
-def exportFile(compressedText):
-    newFile = open(f'teste.{FILE_EXTENSION}', 'w')
+def exportFile(compressedText, extension):
+    newFile = open(f'teste.{extension}', 'w')
     newFile.write(compressedText)
     newFile.close()
 
@@ -105,19 +106,68 @@ def encode(originalText):
         position += 1
     return result
 
-def decode():
-    pass
+def decode(encodedText):
+    isEncoded = False
+    firstElement = True
+    index = ''
+    length = ''
+    result = []
+    stringResult = ''
+
+    for char in encodedText:
+        if char == '<':
+            isEncoded = True
+            firstElement = True
+        elif char == ',':
+            firstElement = False
+        elif char == '>':
+            isEncoded = False
+
+            decodedText = result[-int(index):][:int(length)]
+            result.extend(decodedText)
+
+            index = ''
+            length = ''
+        elif isEncoded:
+            if firstElement:
+                index += char
+            else:
+                length += char
+        else:
+            result.append(char)
+
+    for c in result:
+        stringResult += c
+
+    return stringResult
 
 if __name__ == '__main__':
 
+
+    
 #   args = docopt('__doc__') / para usar nas fases a seguir
 # o ficheiro teste.txt esta na pasta tests
+
+
+
+    if len(sys.argv) < 3:
+        print(f"Usage: python3 {sys.argv[0]} -c (for compress) (or) -d (for descompress) file.txt]")
+        sys.exit(2)
+
+
+    if sys.argv[1] == '-c':
+            textContent = importFile(sys.argv[2])
+            result = encode(textContent)
+            exportFile(result, FILE_EXTENTION)
     
-    if len(sys.argv) == 2:
-        textContent = importFile(sys.argv[1])
-        result = encode(textContent)
-        exportFile(result)
-    else:
-        decode()
+    if sys.argv[1] == '-d':
+            textToDecompress = importFile(sys.argv[2])
+            decompressedResult = decode(textToDecompress)
+            exportFile(decompressedResult, 'txt')
+            
+
+
+
+   
 
 
