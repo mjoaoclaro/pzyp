@@ -22,7 +22,7 @@ This is a work of our python class, we're implementing a compressor/decompressor
 
     LEVEL: is an int that ranges between 1 and 4; the
     compression LEVEL affects the window dimension(size of buffer)
-    and the maximum size sequence.(to be implemented after)
+    and the maximum size sequence.(to be implemented)
 
     Level 1: W =  1 KB ⇒10 bits    M = 15 + 2 ⇒4 bits
     Level 2: W =  4 KB⇒12 bits    M = 15 + 3⇒4 bits
