@@ -126,7 +126,7 @@ def decode(encodedText):
             firstElement = False
         elif char == '>':
             isEncoded = False
-
+   
             decodedText = result[-int(index):][:int(length)]
             result.extend(decodedText)
 
