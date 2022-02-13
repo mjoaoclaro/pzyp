@@ -1,6 +1,7 @@
 
 import sys
 from collections import deque
+import os
 
 
 
@@ -43,7 +44,10 @@ def importFile(location):
     return content
 
 def exportFile(compressedText, extension):
-    newFile = open(f'teste.{extension}', 'w')
+    head, tail = os.path.split(sys.argv[2])
+    file=str(tail)
+    fileName=file.split('.')
+    newFile = open(f'{fileName[0]}.{extension}', 'w')
     newFile.write(compressedText)
     newFile.close()
 
@@ -146,12 +150,10 @@ if __name__ == '__main__':
 
     
 #   args = docopt('__doc__') / para usar nas fases a seguir
-# o ficheiro teste.txt esta na pasta tests
-
 
 
     if len(sys.argv) < 3:
-        print(f"Usage: python3 {sys.argv[0]} -c (for compress) (or) -d (for descompress) file.txt]")
+        print(f"Usage: python3 {sys.argv[0]} -c (for compress) file.txt or - d (for decompress) file.lsz]")
         sys.exit(2)
 
 
@@ -164,7 +166,8 @@ if __name__ == '__main__':
             textToDecompress = importFile(sys.argv[2])
             decompressedResult = decode(textToDecompress)
             exportFile(decompressedResult, 'txt')
-            
+
+ 
 
 
 
