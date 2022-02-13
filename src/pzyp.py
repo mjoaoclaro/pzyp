@@ -4,16 +4,15 @@ from collections import deque
 import os
 
 
-
 FILE_EXTENTION = 'lzs' 
 
 """
-Implementing a compressor/decompressor using the LZSS method
+This is a work of our python class, we're implementing a compressor/decompressor using the LZSS method
 
     Usage:
-        pzyp.py [-c [-l (<LEVEL>)] | -d | -s | -h] [-p (<PASSWORD>)] (<FILE>)
+        pzyp.py [-c | -d |(<FILE>)
 
-    Options:
+    Options: (some of the options will be implemented after)
         -h, --help         show this text
         -c, --compress     compress FILE
         -d, --decompress   decompress FILE
@@ -23,14 +22,26 @@ Implementing a compressor/decompressor using the LZSS method
 
     LEVEL: is an int that ranges between 1 and 4; the
     compression LEVEL affects the window dimension(size of buffer)
-    and the maximum size sequence.
+    and the maximum size sequence.(to be implemented after)
 
     Level 1: W =  1 KB ⇒10 bits    M = 15 + 2 ⇒4 bits
     Level 2: W =  4 KB⇒12 bits    M = 15 + 3⇒4 bits
     Level 3: W = 16 KB ⇒ 14 bits   M = 32 + 3 ⇒ 5 bits
     Level 4: W = 32 KB ⇒ 15 bits   M = 32 + 3 ⇒ 5 bits
 
+
     The output file will have the same name as the FILE with the extension .LZS
+
+    This is only the first part of our work and the deadline is the 13th of february.
+
+    The members of the group are:
+
+    Carlos Mendes,
+    Filipe Cavaco,
+    Maria João Claro
+
+    
+    
 """
 
 
@@ -146,16 +157,12 @@ def decode(encodedText):
     return stringResult
 
 if __name__ == '__main__':
-
-
     
 #   args = docopt('__doc__') / para usar nas fases a seguir
-
 
     if len(sys.argv) < 3:
         print(f"Usage: python3 {sys.argv[0]} -c (for compress) file.txt or - d (for decompress) file.lsz]")
         sys.exit(2)
-
 
     if sys.argv[1] == '-c':
             textContent = importFile(sys.argv[2])
