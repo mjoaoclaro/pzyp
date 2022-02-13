@@ -34,8 +34,9 @@ Implementing a compressor/decompressor using the LZSS method
 """
 
 
-class PyzypError(Exception):
-    pass
+class PzypError(ValueError):
+    print("Error in file! Please try again.")
+
 
 def importFile(location):
     file = open(location, 'r+')
@@ -63,7 +64,7 @@ class Window:
         dictionaryString = "".join(self._dictionary)
         try:
             return dictionaryString.index(word)
-        except ValueError:
+        except PyzypError:
             return -1
         
 def build_token(distance, length):
