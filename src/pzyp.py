@@ -1,7 +1,11 @@
 #import docopt
+from hashlib import new
 from re import search
 import sys
 from collections import deque
+
+
+FILE_EXTENSION = 'lzs' 
 
 """
 Implementing a compressor/decompressor using the LZSS method
@@ -31,76 +35,78 @@ The output file will have the same name as the FILE with the extension .LZS
 class PyzypError(Exception):
     pass
 
+def importFile(location):
+    file = open(location, 'r+')
+    content = file.read()
+    file.close()
+    return content
+
+def exportFile(compressedText):
+    newFile = open(f'teste.{FILE_EXTENSION}', 'w')
+    newFile.write(compressedText)
+    newFile.close()
+
 class Window:
-    def __init__(self, size: int):
-        self._deque = deque(maxlen=size)
+    def __init__(self):
+        self._dictionary = deque(maxlen=100000000000)
+        self._searchWord = []
+    
+    def extendDictionary(self ,data):
+        self._dictionary.extend(data)
+
+    def getOffset(self, word)->int:
+        dictionaryString = "".join(self._dictionary)
+        try:
+            return dictionaryString.index(word)
+        except ValueError:
+            return -1
         
-    
-    def extend(self, data):
-        self._deque.extend(data)
-
-    def search(self, data_compare)->bool:
-        flag = False
-
-        for data in self._deque:
-            if data == data_compare:
-                flag = True
-                break
-        return flag
-
-    def get_data(self): #para testes
-        for c in self._deque:
-            print(c)
+def build_token(distance, length):
+        return f'<{str(distance)},{str(length)}>'
 
 
-def search_more(found, buffer):
-    i = 0
-    offset = 0 # nº de elementos encontrados na lista found que têm correspondencia no buffer
+def encode(originalText):
+    position = 0
+    window = Window()
+    result = ''
+    searchWord = ''
 
-    for c in buffer: 
-        if len(found) <= offset:
-            return i - len(found)
+    for originalChar in originalText:
+        searchWord += originalChar
+        index = window.getOffset(searchWord)
+        if(index != -1) :
+            #se ja estiver a ver o ultimo caracter
+            if(position == len(originalText) - 1):
+                index = position - index - len(searchWord) + 1
+                length = len(searchWord)  
+                pair = build_token(index, length)
+                result += build_token(index, length)
+                searchWord = ''
+            else: 
+                # tentar a letra seguinte
+                searchWordAndTry = searchWord + originalText[position + 1]
+                tryNextCharIndex = window.getOffset(searchWordAndTry) 
 
-        if found[offset] == c:
-            offset += 1
+                if(tryNextCharIndex == -1):
+                    #se com a letra de seguinte nao existe faz a troca
+                    index = position - index - len(searchWord) + 1
+                    length = len(searchWord)  
+                    pair = build_token(index, length)
+                    if(len(pair) > length):
+                        result += searchWord
+                    else:
+                        result += build_token(index, length)
+                    searchWord = ''
+                #se puder continuar a tentar letras vai continuar
         else:
-            offset = 0
-
-        i += 1
-    return 0
-
-
-
-def encode(in_): # talvez valha a pena fazer como ele disse de criar classes para o encode e o decode
-    buffer = Window(20) # falta definir como ele explicou na aula (para ter o tamanho em bytes)
-    found = [] # lista para colocar os caracteres que foram encontrados e depois comparar sequencias no buffer
-    index_at = 0 # indice de onde se encontra o caracter para depois colocar no "<index_at,pos_>"
-    pos_ = 0 # para colocar na posição do comentário em cima; quantos caracteres do found sao iguais em sequencia no buffer
-
-    with open(in_, 'r+') as file_in:
-        while True:
-            for c in file_in.read():
-                buffer.extend(c)
-                try:
-                    if buffer.search(c):
-                        index_at = buffer._deque.index(c)
-                        found.append(c)
-                        
-
-                except PyzypError:
-                    print('erro')
-    
-    found = [] #faz reset da lista
-
-
-
+            result += originalChar
+            searchWord = ''
+        window.extendDictionary(originalChar)
+        position += 1
+    return result
 
 def decode():
     pass
-
-def build_token(index_, pos):
-    build_ = f'<{index_},{pos}>'
-    return build_
 
 if __name__ == '__main__':
 
@@ -108,7 +114,9 @@ if __name__ == '__main__':
 # o ficheiro teste.txt esta na pasta tests
     
     if len(sys.argv) == 2:
-        encode(sys.argv[1])
+        textContent = importFile(sys.argv[1])
+        result = encode(textContent)
+        exportFile(result)
     else:
         decode()
 
