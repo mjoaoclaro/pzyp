@@ -1,4 +1,5 @@
 
+from curses import window
 import sys
 from collections import deque
 import os
@@ -45,10 +46,6 @@ This is a work of our python class, we're implementing a compressor/decompressor
 """
 
 
-class PzypError(ValueError):
-    print("Error in file! Please try again.")
-
-
 def importFile(location):
     file = open(location, 'r+')
     content = file.read()
@@ -75,87 +72,91 @@ class Window:
         dictionaryString = "".join(self._dictionary)
         try:
             return dictionaryString.index(word)
-        except PyzypError:
+        except ValueError:
             return -1
-        
-def build_token(distance, length):
+    def build_token(self, distance, length):
         return f'<{str(distance)},{str(length)}>'
 
+    def decode(self, encodedText):
+        isEncoded = False
+        firstElement = True
+        index = ''
+        length = ''
+        result = []
+        stringResult = ''
 
-def encode(originalText):
-    position = 0
-    window = Window()
-    result = ''
-    searchWord = ''
+        for char in encodedText:
+            if char == '<':
+                isEncoded = True
+                firstElement = True
+            elif char == ',':
+                firstElement = False
+            elif char == '>':
+                isEncoded = False
+    
+                decodedText = result[-int(index):][:int(length)]
+                result.extend(decodedText)
 
-    for originalChar in originalText:
-        searchWord += originalChar
-        index = window.getOffset(searchWord)
-        if(index != -1) :
-            #se ja estiver a ver o ultimo caracter
-            if(position == len(originalText) - 1):
-                index = position - index - len(searchWord) + 1
-                length = len(searchWord)  
-                pair = build_token(index, length)
-                result += build_token(index, length)
-                searchWord = ''
-            else: 
-                # tentar a letra seguinte
-                searchWordAndTry = searchWord + originalText[position + 1]
-                tryNextCharIndex = window.getOffset(searchWordAndTry) 
+                index = ''
+                length = ''
+            elif isEncoded:
+                if firstElement:
+                    index += char
+                else:
+                    length += char
+            else:
+                result.append(char)
 
-                if(tryNextCharIndex == -1):
-                    #se com a letra de seguinte nao existe faz a troca
+        for c in result:
+            stringResult += c
+
+        return stringResult
+
+    def encode(self, originalText):
+        position = 0
+        result = ''
+        searchWord = ''
+
+        for originalChar in originalText:
+            searchWord += originalChar
+            index = self.getOffset(searchWord)
+            if(index != -1) :
+                #se ja estiver a ver o ultimo caracter
+                if(position == len(originalText) - 1):
                     index = position - index - len(searchWord) + 1
                     length = len(searchWord)  
-                    pair = build_token(index, length)
-                    if(len(pair) > length):
-                        result += searchWord
-                    else:
-                        result += build_token(index, length)
+                    pair = self.build_token(index, length)
+                    result += self.build_token(index, length)
                     searchWord = ''
-                #se puder continuar a tentar letras vai continuar
-        else:
-            result += originalChar
-            searchWord = ''
-        window.extendDictionary(originalChar)
-        position += 1
-    return result
+                else: 
+                    # tentar a letra seguinte
+                    searchWordAndTry = searchWord + originalText[position + 1]
+                    tryNextCharIndex = self.getOffset(searchWordAndTry) 
 
-def decode(encodedText):
-    isEncoded = False
-    firstElement = True
-    index = ''
-    length = ''
-    result = []
-    stringResult = ''
-
-    for char in encodedText:
-        if char == '<':
-            isEncoded = True
-            firstElement = True
-        elif char == ',':
-            firstElement = False
-        elif char == '>':
-            isEncoded = False
-   
-            decodedText = result[-int(index):][:int(length)]
-            result.extend(decodedText)
-
-            index = ''
-            length = ''
-        elif isEncoded:
-            if firstElement:
-                index += char
+                    if(tryNextCharIndex == -1):
+                        #se com a letra de seguinte nao existe faz a troca
+                        index = position - index - len(searchWord) + 1
+                        length = len(searchWord)  
+                        pair = self.build_token(index, length)
+                        if(len(pair) > length):
+                            result += searchWord
+                        else:
+                            result += self.build_token(index, length)
+                        searchWord = ''
+                    #se puder continuar a tentar letras vai continuar
             else:
-                length += char
-        else:
-            result.append(char)
+                result += originalChar
+                searchWord = ''
+            self.extendDictionary(originalChar)
+            position += 1
+        return result
 
-    for c in result:
-        stringResult += c
+        
 
-    return stringResult
+
+
+
+
 
 if __name__ == '__main__':
     
@@ -167,12 +168,14 @@ if __name__ == '__main__':
 
     if sys.argv[1] == '-c':
             textContent = importFile(sys.argv[2])
-            result = encode(textContent)
+            encodeWindow = Window()
+            result = encodeWindow.encode(textContent)
             exportFile(result, FILE_EXTENTION)
     
     if sys.argv[1] == '-d':
             textToDecompress = importFile(sys.argv[2])
-            decompressedResult = decode(textToDecompress)
+            decodeWindow = Window()
+            decompressedResult = decodeWindow.decode(textToDecompress)
             exportFile(decompressedResult, 'txt')
 
  
