@@ -1,11 +1,3 @@
-
-from collections import deque
-import os
-from docopt import docopt
-import time
-import struct
-
-
 """
 This is a work of our python class, we're implementing a compressor/decompressor using the LZSS method
 
@@ -38,11 +30,16 @@ This is a work of our python class, we're implementing a compressor/decompressor
 
     Carlos Mendes,
     Filipe Cavaco,
-    Maria João Claro
-
-    
-    
+    Maria João Claro    
 """
+
+
+from collections import deque
+import os
+from docopt import docopt
+import time
+import struct
+
 LEVEL = {1: (10, 4), 2: (12, 4), 3: (14, 5), 4: (15, 5)}
 
 ARGS = docopt(__doc__)
