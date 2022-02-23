@@ -52,7 +52,7 @@ from curses import window
 import sys
 from collections import deque
 import os
-from lzss_io import LZSSWriter, PZYPContext
+from lzss_io import LZSSWriter, PZYPContext, LZSSReader
 import io
 
 
