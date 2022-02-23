@@ -32,17 +32,6 @@ This is a work of our python class, we're implementing a compressor/decompressor
     Filipe Cavaco,
     Maria João Claro    
 """
-LEVEL = {1: (10, 4), 2: (12, 4), 3: (14, 5), 4: (15, 5)}
-
-ARGS = docopt(__doc__)
-
-FILE_EXTENTION = 'lzs'
-
-ENCODED_OFFSET_SIZE=LEVEL[int(ARGS['--comprlevel'])][0]
-
-
-class PzypError(ValueError):
-    pass
 
 
 from collections import deque
