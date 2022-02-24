@@ -34,10 +34,12 @@ This is a work of our python class, we're implementing a compressor/decompressor
 """
 
 
+from bz2 import decompress
 from collections import deque
 import os
 import sys
 from typing import BinaryIO
+from unittest import result
 from docopt import docopt
 import time
 import struct
@@ -45,6 +47,7 @@ from typing import BinaryIO
 from cryptography.fernet import Fernet
 import base64, hashlib
 from lzss_io import LZSSWriter, PZYPContext, LZSSReader
+
 
 
 
@@ -67,16 +70,15 @@ MAX_STRING_SIZE = 2 ** ENCODED_LEN_SIZE - 1  + MIN_STRING_SIZE
 class Window:
     def __init__(self, ctx=PZYPContext()):
         self._dictionary = deque(maxlen=2 ** ctx.encoded_offset_size)
-      
-    
-    def extendDictionary(self ,data):
-        self._dictionary.extend(data)
 
     def extend(self, data: bytes):
         self._dictionary.append(data)
         if len(self._dictionary) >= self._dictionary.maxlen:
             self._dictionary.popleft()
 
+    def get_dict(self): #esta função retorna o deque convertido em lista. tive de fazer assim porque o deque atrofiava com o slice no decode
+        return list(self._dictionary)
+    
     def find(self, check_elements):
         i = 0
         offset = 0
@@ -93,8 +95,8 @@ class Window:
             i += 1
         return -1
 
-    def head_writer(self, win_dimention, max_seq, file_name):
-        dt = time.time()
+    def head_writer(self, win_dimention, max_seq, file_name): #aqui tive de por espaços entre os elementos para o decode
+        dt = time.time()                                      #poder dividir e por numa lista
         fl = str(dt)
         newl = '\n'
         fileN = get_fileName()
@@ -104,26 +106,26 @@ class Window:
             f.write(struct.pack('{}s'.format(len(fl)),bytes(fl, ENCODING)))
             f.write(bytes(' '+file_name +' '+newl, ENCODING))
         
-        print("reader OK")
 
-def head_reader(file_name):
+def head_reader(file_name): #para ler o cabeçalho tive de mudar as funçoes writer e reader
         with open(file_name, 'rb') as f:
-            header=f.readline().split()
-            off=header[0].decode(ENCODING)
-            size_sec=header[2]
-            a = struct.unpack('{}s'.format(len(size_sec)), header[2])
-            fn=header[3].decode(ENCODING)
-            dt_sec = a[0].decode(ENCODING)
-            dt = time.ctime(float(dt_sec))
+            header=f.readline().split() #coloca o cabeçalho numa lista
+            off=header[0].decode(ENCODING)#descodifica os bytes em str
+            size_sec=header[2] #para saber o tamanho da data em segundos
+            a = struct.unpack('{}s'.format(len(size_sec)), header[2]) #fazemos o unpack dos segundos; da um tuplo
+            fn=header[3].decode(ENCODING) #o nome do ficheiro em str
+            dt_sec = a[0].decode(ENCODING) #acedemos ao tuplo dos segundos e convertemos numa str
+            dt = time.ctime(float(dt_sec)) #transformamos os segundos numa data; (float(dt_sec)) quer dizer str para float
             print(f'File name: {fn}')
             print(f'Compression date/time:  {dt}')
-            print(f'Compression parameters : Buffer -> {2**int(off)} ({off} bits),')
+            print(f'Compression parameters : Buffer -> {2**int(off)} ({off} bits),') #de str para int para fazer a conta 
             if off == 10:
                 print('Max Seq. Len. -> 17 (4 bits)')
             elif off == 12:
                 print('Max Seq. Len. -> 18 (4 bits)')
             else:
                 print('Max Seq. Len. -> 35 (5 bits)')
+      
 
 def genwrite_key(file, password):
     hexadecimalPassword = hashlib.md5(password.encode()).hexdigest()
@@ -175,10 +177,28 @@ def encode(in_: BinaryIO, out: BinaryIO, lzss_writer=None, ctx=PZYPContext()):
             i += 1
 
 
-def decode(in_: BinaryIO, out: BinaryIO, lzss_reader=None, ctx=PZYPContext()):
+def decode(in_: BinaryIO, out: BinaryIO, off_len, lzss_reader=None, ctx=PZYPContext()):
     with (lzss_reader or LZSSReader(in_, ctx)) as lzss_in:
-        pass
-    #faltam coisas aqui
+        buff_size = off_len[0]   #dividimos em posiçao
+        len_size = off_len[1]    # e tamanho
+        window = Window(ctx=PZYPContext(buff_size, len_size))#instanciamos a janela com os parametros certos do ficheiro
+        output = window.get_dict() #criei este novo metodo(explicaçao em cima)
+        result=b''
+        for encoded_flag, element in lzss_in:
+                if encoded_flag:    #se ele encontra o bit a dizer que esta encoded
+                    prefix_pos, prefix_len = element #vai buscar a posiçao e comprimento ao element
+                    b_decompress = output[-prefix_pos:][:prefix_len] #vamos buscar o que esta codificado na pos e comp
+                    result += b''.join(b_decompress) #pomos ainda em bytes no resultado
+                    for b in b_decompress:
+                        window.extend(b) #vamos colocar o byte no buffer
+                        output = window.get_dict() 
+                else:
+                    result += element #se nao é logo o elemento que nao esta encoded que juntamos ao resultado
+                    window.extend(element) #vamos colocar o elemento no buffer
+                    output = window.get_dict()
+
+
+        out.write(result.strip(b'\r').decode(ENCODING)) #escrevemos o resultado no ficheiro de saida
 
 
 def get_fileName():
@@ -218,17 +238,24 @@ def main():
                     #guardar conteudo encriptado
                     out.write(encriptedFile)
     elif ARGS['--decompress']:
+        if '.lzs' not in ARGS['FILE']:
+                    print("File is not compressed, please try again")
+                    sys.exit()
+        else:
             with open(ARGS['FILE'], 'rb') as in_:
-                next(in_)
-                #faltam coisas aqui
+                    head = in_.readline().split()#com esta linha o decoder vai ler a 1ª linha que e o cabeçalho
+                    fn=head[3].decode(ENCODING)#aqui vamos buscar o nome do ficheiro ao cabeçalho
+                    oNl=[int(head[0]), int(head[1])]#aqui vamos buscar o NCODED_OFFSET_SIZE e o ENCODED_LEN_SIZE do ficheiro comprimido
+                    with open(fn, 'w+') as out:
+                        decode(in_, out, oNl)#quando chamamos o decode, o in_ ja leu a primeira linha e começa no codigo comprimido
+
     if ARGS['--sumary']:
         fileName = ARGS['FILE']
         if '.lzs' not in fileName:
             print("File is not compressed, please try again")
             sys.exit()
         else:
-            head_reader(fileName) # nao esta a dar: erro(struct.error: unpack requires a buffer of 29 bytes)
-            #mas calculando com o struct.calcsize da certo...
+            head_reader(fileName)
         
 
 if __name__ == '__main__':
