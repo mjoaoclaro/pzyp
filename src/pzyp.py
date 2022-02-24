@@ -101,26 +101,34 @@ class Window:
             i += 1
         return -1
 
-def head_writer(self, win_dimention, max_seq, file_name):
+    def head_writer(self, win_dimention, max_seq, file_name):
         dt = time.time()
-        with open(f"{ARGS['FILE']}.{FILE_EXTENTION}", 'wb+') as f:
-            f.write(struct.pack('>iid', win_dimention, max_seq, dt))
-            f.write(struct.pack('{}s'.format(len(file_name)), bytes(file_name, ENCODING)))
-            f.write('\n'.encode(ENCODING))
-        print("Header ready")
+        fl = str(dt)
+        print(fl)
+        newl = '\n'
+        with open(f"{sys.argv[1]}.lzs", 'wb+') as f:
+            f.write(bytes(str(win_dimention)+' ', 'utf-8'))
+            f.write(bytes(str(max_seq)+' ', 'utf-8'))
+            f.write(struct.pack('{}s'.format(len(fl)),bytes(fl, 'utf-8')))
+            f.write(bytes(' '+file_name +' '+newl, 'utf-8'))
 
 
-def head_reader(file_name, size):
-        with open(file_name, 'rb') as f:
-            s_list=list(struct.unpack(f'>iid {size}s', f.readline()))
-        dt_sec = s_list[2]
-        dt = time.ctime(dt_sec)
-        print(f'File name: {str(s_list[3])}')
+def head_reader(file_name):
+    with open(file_name, 'rb') as f:
+        header=f.readline().split()
+        print(header)
+        off=header[0].decode('utf-8')
+        size_sec=header[2]
+        a = struct.unpack('{}s'.format(len(size_sec)), header[2])
+        fn=header[3].decode('utf-8')
+        dt_sec = a[0].decode('utf-8')
+        dt = time.ctime(float(dt_sec))
+        print(f'File name: {fn}')
         print(f'Compression date/time:  {dt}')
-        print(f'Compression parameters : Buffer -> {2**s_list[0]} ({s_list[0]} bits),')
-        if s_list[0] == 10:
+        print(f'Compression parameters : Buffer -> {2**int(off)} ({off} bits),')
+        if off == 10:
             print('Max Seq. Len. -> 17 (4 bits)')
-        elif s_list[0] == 12:
+        elif off == 12:
             print('Max Seq. Len. -> 18 (4 bits)')
         else:
             print('Max Seq. Len. -> 35 (5 bits)')
