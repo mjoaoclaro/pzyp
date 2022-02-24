@@ -41,19 +41,11 @@ from typing import BinaryIO
 from docopt import docopt
 import time
 import struct
-import io
-import math
-from typing import Union, BinaryIO, Tuple
-import bitstruct
-from bitarray import bitarray
+from typing import BinaryIO
 from cryptography.fernet import Fernet
 import base64, hashlib
-from curses import window
-import sys
-from collections import deque
-import os
 from lzss_io import LZSSWriter, PZYPContext, LZSSReader
-import io
+
 
 
 LEVEL = {1: (10, 4), 2: (12, 4), 3: (14, 5), 4: (15, 5)}
@@ -61,7 +53,7 @@ LEVEL = {1: (10, 4), 2: (12, 4), 3: (14, 5), 4: (15, 5)}
 ARGS = docopt(__doc__)
 
 FILE_EXTENTION = 'lzs'
-ENCODING = "utf-8"
+ENCODING = 'utf-8'
 
 ENCODED_OFFSET_SIZE=LEVEL[int(ARGS['--comprlevel'])][0]
 ENCODED_LEN_SIZE=LEVEL[int(ARGS['--comprlevel'])][1]
@@ -104,34 +96,34 @@ class Window:
     def head_writer(self, win_dimention, max_seq, file_name):
         dt = time.time()
         fl = str(dt)
-        print(fl)
         newl = '\n'
-        with open(f"{sys.argv[1]}.lzs", 'wb+') as f:
-            f.write(bytes(str(win_dimention)+' ', 'utf-8'))
-            f.write(bytes(str(max_seq)+' ', 'utf-8'))
-            f.write(struct.pack('{}s'.format(len(fl)),bytes(fl, 'utf-8')))
-            f.write(bytes(' '+file_name +' '+newl, 'utf-8'))
-
+        fileN = get_fileName()
+        with open(f'{fileN}.{FILE_EXTENTION}', 'wb+') as f:
+            f.write(bytes(str(win_dimention)+' ', ENCODING))
+            f.write(bytes(str(max_seq)+' ', ENCODING))
+            f.write(struct.pack('{}s'.format(len(fl)),bytes(fl, ENCODING)))
+            f.write(bytes(' '+file_name +' '+newl, ENCODING))
+        
+        print("reader OK")
 
 def head_reader(file_name):
-    with open(file_name, 'rb') as f:
-        header=f.readline().split()
-        print(header)
-        off=header[0].decode('utf-8')
-        size_sec=header[2]
-        a = struct.unpack('{}s'.format(len(size_sec)), header[2])
-        fn=header[3].decode('utf-8')
-        dt_sec = a[0].decode('utf-8')
-        dt = time.ctime(float(dt_sec))
-        print(f'File name: {fn}')
-        print(f'Compression date/time:  {dt}')
-        print(f'Compression parameters : Buffer -> {2**int(off)} ({off} bits),')
-        if off == 10:
-            print('Max Seq. Len. -> 17 (4 bits)')
-        elif off == 12:
-            print('Max Seq. Len. -> 18 (4 bits)')
-        else:
-            print('Max Seq. Len. -> 35 (5 bits)')
+        with open(file_name, 'rb') as f:
+            header=f.readline().split()
+            off=header[0].decode(ENCODING)
+            size_sec=header[2]
+            a = struct.unpack('{}s'.format(len(size_sec)), header[2])
+            fn=header[3].decode(ENCODING)
+            dt_sec = a[0].decode(ENCODING)
+            dt = time.ctime(float(dt_sec))
+            print(f'File name: {fn}')
+            print(f'Compression date/time:  {dt}')
+            print(f'Compression parameters : Buffer -> {2**int(off)} ({off} bits),')
+            if off == 10:
+                print('Max Seq. Len. -> 17 (4 bits)')
+            elif off == 12:
+                print('Max Seq. Len. -> 18 (4 bits)')
+            else:
+                print('Max Seq. Len. -> 35 (5 bits)')
 
 def genwrite_key(file, password):
     hexadecimalPassword = hashlib.md5(password.encode()).hexdigest()
@@ -152,6 +144,7 @@ def openFile(location):
 def encode(in_: BinaryIO, out: BinaryIO, lzss_writer=None, ctx=PZYPContext()):
     with (lzss_writer or LZSSWriter(out, ctx)) as lzss_out:
         window = Window(ctx)
+        window.head_writer(ENCODED_OFFSET_SIZE, ENCODED_LEN_SIZE, ARGS['FILE'])
         check_characters = []
         text = in_.read()
         i = 0
@@ -230,12 +223,11 @@ def main():
                 #faltam coisas aqui
     if ARGS['--sumary']:
         fileName = ARGS['FILE']
-        size = len(fileName)
         if '.lzs' not in fileName:
             print("File is not compressed, please try again")
             sys.exit()
         else:
-            head_reader(fileName, size) # nao esta a dar: erro(struct.error: unpack requires a buffer of 29 bytes)
+            head_reader(fileName) # nao esta a dar: erro(struct.error: unpack requires a buffer of 29 bytes)
             #mas calculando com o struct.calcsize da certo...
         
 
