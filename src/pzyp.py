@@ -41,7 +41,7 @@ from docopt import docopt
 from lzss_io import PZYPContext
 import compress_decompress as cd
 import sys
-from desktop_app1 import PzypMainWindow
+import desktop_app1 as mw
 
 LEVEL = {1: (10, 4), 2: (12, 4), 3: (14, 5), 4: (15, 5)}
 
@@ -94,7 +94,7 @@ def main():
                     with open(fn, 'w+') as out:
                         cd.decode(in_, out, oNl)#quando chamamos o decode, o in_ ja leu a primeira linha e começa no codigo comprimido
     else:
-        PzypMainWindow.run_app()
+        mw.PzypMainWindow.run_app()
 
 
 

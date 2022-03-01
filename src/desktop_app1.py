@@ -9,8 +9,7 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 from PySide6.QtGui import QIcon
 import ui_desktop_app
-from compress_decompress import genwrite_key, encode, decode
-
+import compress_decompress as cd
 from utils import (
     compile_ui_if_needed, 
     connectev, 
@@ -44,9 +43,9 @@ class PzypMainWindow(QMainWindow, ui_desktop_app.Ui_MainWindow):
         connectev(self.txtFile, 'mousePressEvent', self.browse_and_select)
         connectev(self.txtFile, 'keyPressEvent', self.check_file_path, call_base_before=True)
         self.txtFile.setEnabled(True)
-        self.btnBrowse.clicked.connect(self.start_compression)
-        connectev(self.pwdtxt1, 'keyPressEvent', self.check_passwords, call_base_before=True)
-        connectev(self.pwdtxt2, 'keyPressEvent', self.check_passwords, call_base_before=True)
+        self.btnStart.clicked.connect(self.start_compression)
+        connectev(self.pwdtxt1, 'keyPressEvent', self.checkpasswords, call_base_before=True)
+        connectev(self.pwdtxt2, 'keyPressEvent', self.checkpasswords, call_base_before=True)
         
     
     def browse_and_select(self, *_):
@@ -92,12 +91,19 @@ class PzypMainWindow(QMainWindow, ui_desktop_app.Ui_MainWindow):
             # encode() #acrecentar
             password = self.pwdtxt1.text().strip()
             if password:
-                genwrite_key(password, out_file_path) #confirmar
+                cd.genwrite_key(password, out_file_path) #confirmar
             show_info(f"Compressed {in_file_path} into {out_file_path}")
         if self.radioButtonD.isChecked:
             mbox.setText("funciona")
             #decode()
     #:
+
+    def checkpasswords(self, *_):
+        if self.passwords_match():
+            if self.pwdtxt1.text().strip():
+                self.btnStart.setEnabled(True)
+        else:
+            self.btnStart.setEnabled(False)
 
     def passwords_match(self) -> bool:
         return self.pwdtxt1.text().strip() == self.pwdtxt2.text().strip()
