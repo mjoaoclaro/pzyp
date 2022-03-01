@@ -4,6 +4,7 @@ This is a work of our python class, we're implementing a compressor/decompressor
 
     Usage:
         pzyp.py [-c [-l LEVEL] | -d] [-sh] [-p PASSWORD] FILE
+        pzyp.py
 
     Options: (some of the options will be implemented after)
         -h, --help                  show this text
@@ -40,7 +41,7 @@ from docopt import docopt
 from lzss_io import PZYPContext
 import compress_decompress as cd
 import sys
-
+from desktop_app1 import PzypMainWindow
 
 LEVEL = {1: (10, 4), 2: (12, 4), 3: (14, 5), 4: (15, 5)}
 
@@ -74,6 +75,13 @@ def main():
                     out.truncate(0)
                     #guardar conteudo encriptado
                     out.write(encriptedFile)
+                    if ARGS['--sumary']:
+                        fileName = ARGS['FILE']
+                        if '.lzs' not in fileName:
+                            print("File is not compressed, please try again")
+                            sys.exit()
+                        else:
+                            cd.head_reader(fileName)
     elif ARGS['--decompress']:
         if '.lzs' not in ARGS['FILE']:
                     print("File is not compressed, please try again")
@@ -85,15 +93,10 @@ def main():
                     oNl=[int(head[0]), int(head[1])]#aqui vamos buscar o NCODED_OFFSET_SIZE e o ENCODED_LEN_SIZE do ficheiro comprimido
                     with open(fn, 'w+') as out:
                         cd.decode(in_, out, oNl)#quando chamamos o decode, o in_ ja leu a primeira linha e começa no codigo comprimido
+    else:
+        PzypMainWindow.run_app()
 
-    if ARGS['--sumary']:
-        fileName = ARGS['FILE']
-        if '.lzs' not in fileName:
-            print("File is not compressed, please try again")
-            sys.exit()
-        else:
-            cd.head_reader(fileName)
-        
+
 
 if __name__ == '__main__':
     main()
