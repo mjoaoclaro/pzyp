@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>403</width>
-    <height>431</height>
+    <width>390</width>
+    <height>436</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,12 +16,15 @@
   <property name="styleSheet">
    <string notr="true"/>
   </property>
+  <property name="animated">
+   <bool>false</bool>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QRadioButton" name="radioButtonC">
     <property name="geometry">
      <rect>
-      <x>80</x>
-      <y>50</y>
+      <x>70</x>
+      <y>270</y>
       <width>99</width>
       <height>20</height>
      </rect>
@@ -33,8 +36,8 @@
    <widget class="QRadioButton" name="radioButtonD">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>50</y>
+      <x>210</x>
+      <y>270</y>
       <width>99</width>
       <height>20</height>
      </rect>
@@ -46,24 +49,24 @@
    <widget class="QLineEdit" name="txtFile">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>280</y>
-      <width>211</width>
+      <x>40</x>
+      <y>220</y>
+      <width>291</width>
       <height>21</height>
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="btnBrowse">
+   <widget class="QPushButton" name="btnStart">
     <property name="geometry">
      <rect>
-      <x>270</x>
-      <y>270</y>
+      <x>240</x>
+      <y>310</y>
       <width>100</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>Browse</string>
+     <string>Start</string>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -83,9 +86,9 @@
     <property name="geometry">
      <rect>
       <x>60</x>
-      <y>100</y>
+      <y>40</y>
       <width>261</width>
-      <height>131</height>
+      <height>141</height>
      </rect>
     </property>
     <property name="title">
@@ -100,6 +103,9 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="clearButtonEnabled">
+      <bool>false</bool>
+     </property>
     </widget>
     <widget class="QLineEdit" name="pwdtxt2">
      <property name="geometry">
@@ -111,21 +117,66 @@
       </rect>
      </property>
     </widget>
+    <widget class="QPushButton" name="btnOk">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>100</y>
+       <width>31</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Ok</string>
+     </property>
+    </widget>
    </widget>
-   <widget class="QDialogButtonBox" name="buttonOkC">
+   <widget class="QComboBox" name="comboBox">
     <property name="geometry">
      <rect>
-      <x>80</x>
-      <y>340</y>
-      <width>201</width>
+      <x>30</x>
+      <y>320</y>
+      <width>161</width>
       <height>32</height>
      </rect>
     </property>
-    <property name="styleSheet">
-     <string notr="true"/>
+    <item>
+     <property name="text">
+      <string/>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>1</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>2</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>3</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>4</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>350</y>
+      <width>131</width>
+      <height>16</height>
+     </rect>
     </property>
-    <property name="standardButtons">
-     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+    <property name="text">
+     <string>Compress Level</string>
     </property>
    </widget>
   </widget>
