@@ -104,9 +104,6 @@ class Window:
             else:
                newName=in_.split('/')
                f.write(bytes(' '+ newName[-1] +' '+newl, ENCODING))
-               
-        
-        
 
 def head_reader(file_name): 
         with open(file_name, 'rb') as f:
@@ -126,7 +123,12 @@ def head_reader(file_name):
                 print('Max Seq. Len. -> 18 (4 bits)')
             else:
                 print('Max Seq. Len. -> 35 (5 bits)')
-      
+
+def get_fileName(filName):
+    head, tail = os.path.split(filName)
+    fileName=tail
+    result=fileName.split('.')
+    return result[0]
 
 def genwrite_key(file, password):
     hexadecimalPassword = hashlib.md5(password.encode()).hexdigest()
@@ -219,12 +221,6 @@ def decode(in_: BinaryIO, out: BinaryIO, off_len, lzss_reader=None, ctx=lz.PZYPC
         print(result)
         out.write(result.decode(ENCODING))
 
-
-def get_fileName(filName):
-    head, tail = os.path.split(filName)
-    fileName=tail
-    result=fileName.split('.')
-    return result[0]
 
 
 def main():
