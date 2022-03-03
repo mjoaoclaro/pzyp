@@ -218,7 +218,7 @@ def decode(in_: BinaryIO, out: BinaryIO, off_len, lzss_reader=None, ctx=lz.PZYPC
                     window.extend(element)
                     output = window.get_dict()
         
-        print(result)
+
         out.write(result.decode(ENCODING))
 
 
